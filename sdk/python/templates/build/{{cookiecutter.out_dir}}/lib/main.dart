@@ -22,13 +22,13 @@ import 'package:{{ dep }}/{{ dep }}.dart' as {{ dep }};
 /*
 {% set show_boot_screen = get_pyproject("tool.flet." ~ cookiecutter.options.config_platform ~ ".app.boot_screen.show")
                         or get_pyproject("tool.flet.app.boot_screen.show")
-                        or False %}
+                        or True %}
 {% set boot_screen_message = get_pyproject("tool.flet." ~ cookiecutter.options.config_platform ~ ".app.boot_screen.message")
                         or get_pyproject("tool.flet.app.boot_screen.message") %}
 
 {% set show_startup_screen = get_pyproject("tool.flet." ~ cookiecutter.options.config_platform ~ ".app.startup_screen.show")
                         or get_pyproject("tool.flet.app.startup_screen.show")
-                        or False %}
+                        or True %}
 {% set startup_screen_message = get_pyproject("tool.flet." ~ cookiecutter.options.config_platform ~ ".app.startup_screen.message")
                         or get_pyproject("tool.flet.app.startup_screen.message") %}
 
