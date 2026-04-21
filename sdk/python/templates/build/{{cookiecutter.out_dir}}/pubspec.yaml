@@ -33,7 +33,10 @@ dependency_overrides:
   flet:
     path: ../../../../../packages/flet
   flet_permission_handler:
-    path: ../../../packages/flet-permission-handler/src/flutter/flet_permission_handler
+    git:
+      path: sdk/python/packages/flet-permission-handler/src/flutter/flet_permission_handler
+      ref: main
+      url: https://github.com/SoulMelody/flet.git
   device_info_plus: 12.3.0 # remove that in May, 2026 once CI moved to macOS 26
   connectivity_plus: 7.0.0 # remove that in May, 2026 once CI moved to macOS 26
 
