@@ -31,7 +31,10 @@ dependencies:
 
 dependency_overrides:
   flet:
-    path: ../../../../../packages/flet
+    git:
+      path: packages/flet
+      ref: main
+      url: https://github.com/SoulMelody/flet.git
   flet_permission_handler:
     git:
       path: sdk/python/packages/flet-permission-handler/src/flutter/flet_permission_handler
