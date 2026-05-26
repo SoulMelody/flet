@@ -1,3 +1,18 @@
+## 0.85.2
+
+### New features
+
+* Add `Route(modal=True)` to `flet.Router` for fullscreen-dialog modal overlays that don't replace the underlying view stack — closing the modal pops it without rebuilding the views underneath. Two flavours by placement: top-level modals are *global* (the base stack is rebuilt from the Router's last non-modal location), nested-child modals are *local* (the base stack is the chain above the modal in the route tree, so deep-link works from URL alone) ([#6516](https://github.com/flet-dev/flet/pull/6516)) by @FeodorFitsner.
+* Add `Route(recursive=True)` to `flet.Router` so a route can match itself as its own descendant — one `View` per consumed URL segment, ideal for tree-shaped URLs of unbounded depth (`/folder/a/b/c` produces a 4-View stack; back-swipe walks one segment at a time). Non-recursive children are tried before self-recursion at every depth, so a specific sibling (e.g. `example/:gp*`) wins over the recursive `:slug` without duplicating it at every level ([#6516](https://github.com/flet-dev/flet/pull/6516)) by @FeodorFitsner.
+
+### Improvements
+
+* `flet.Router`'s default `on_view_pop` now navigates to the matched chain's parent (`chain[-2].resolved_path`) instead of `views[-2].route`, which is robust against apps that share a `View.route` value between sibling tab roots to suppress switch transitions. Apps that install their own `page.on_view_pop` before `page.render_views()` still take precedence. Each sub-chain (base + modal) renders with its own `LocationInfo`, so `is_route_active(...)` inside a base view sees the base URL while a global modal is open over it ([#6516](https://github.com/flet-dev/flet/pull/6516)) by @FeodorFitsner.
+
+### Bug fixes
+
+* Fix cross-tab session contamination on Flet web: opening the same app URL in a duplicated browser tab no longer steals the original tab's output connection via `sessionStorage`-cloned `_flet_session_id`. `REGISTER_CLIENT` now rejects session reuse when the existing session still has a live `connection`, allocating a fresh session for the second tab while preserving legitimate single-tab reconnect after refresh or network blip (where `connection` is already `None`) ([#6512](https://github.com/flet-dev/flet/issues/6512), [#6513](https://github.com/flet-dev/flet/pull/6513)) by @ihmily.
+
 ## 0.85.1
 
 ### Bug fixes
@@ -18,11 +33,19 @@
 * Add `issues` property to `CodeEditor` (along with `Issue` and `IssueType` types) for displaying code analysis error markers in the gutter, with analysis performed on the Python side ([#6407](https://github.com/flet-dev/flet/pull/6407)) by @FeodorFitsner.
 * Add `Page.pop_views_until()` to pop multiple views and return a result to the destination view ([#6326](https://github.com/flet-dev/flet/issues/6326), [#6347](https://github.com/flet-dev/flet/pull/6347)) by @brunobrown.
 * Make `NavigationDrawerDestination.label` accept custom controls and add `NavigationDrawerTheme.icon_theme` ([#6379](https://github.com/flet-dev/flet/issues/6379), [#6395](https://github.com/flet-dev/flet/pull/6395)) by @ndonkoHenri.
-* Add `local_position` and `global_position` to `DragTargetEvent`, deprecating `x`, `y`, and `offset` ([#6387](https://github.com/flet-dev/flet/issues/6387), [#6401](https://github.com/flet-dev/flet/pull/6401)) by @ndonkoHenri.
+* Add `local_position` and `global_position` to `DragTargetEvent` for target-relative and global pointer coordinates ([#6387](https://github.com/flet-dev/flet/issues/6387), [#6401](https://github.com/flet-dev/flet/pull/6401)) by @ndonkoHenri.
 * Added PCM16 streaming to `AudioRecorder`, including `on_stream` chunks and direct upload support via `AudioRecorderUploadSettings` ([#5858](https://github.com/flet-dev/flet/issues/5858), [#6423](https://github.com/flet-dev/flet/pull/6423)) by @ndonkoHenri.
 * Add `Page.theme_animation_style` for customizing the duration and curve of the theme cross-fade between `theme` and `dark_theme` (or disabling it with `AnimationStyle.no_animation()`), exposing Flutter's `MaterialApp.themeAnimationStyle` ([#6476](https://github.com/flet-dev/flet/pull/6476)) by @FeodorFitsner.
 
-### Improvements
+### Breaking changes
+
+* Remove deprecated module-level `margin`, `padding`, `border`, and `border_radius` helper functions (`all()`, `symmetric()`, `only()`, `horizontal()`, `vertical()`) in favor of the corresponding `Margin`, `Padding`, `Border`, and `BorderRadius` classmethods ([#6425](https://github.com/flet-dev/flet/pull/6425)) by @ndonkoHenri.
+
+### Deprecations
+
+* Deprecate `DragTargetEvent.x`, `DragTargetEvent.y`, and `DragTargetEvent.offset`; use `local_position` for target-relative coordinates or `global_position` for global coordinates instead. These APIs are scheduled for removal in `0.88.0` ([#6387](https://github.com/flet-dev/flet/issues/6387), [#6401](https://github.com/flet-dev/flet/pull/6401)) by @ndonkoHenri.
+* Deprecate `Video.show_controls`; set `Video.controls` to `None` to hide controls. This API is scheduled for removal in `0.88.0` ([#6463](https://github.com/flet-dev/flet/pull/6463)) by @ndonkoHenri.
+* Deprecate `Video.playlist_add()` and `Video.playlist_remove()`; mutate `Video.playlist` directly with list methods such as `append()` and `pop()`. These APIs are scheduled for removal in `0.88.0` ([#6463](https://github.com/flet-dev/flet/pull/6463)) by @ndonkoHenri.
 
 ### Bug fixes
 
@@ -57,7 +80,6 @@
 ### Other changes
 
 * Add a declarative `ReorderableListView` app example showing add, remove, and reorder flows with stable item identity ([#6374](https://github.com/flet-dev/flet/pull/6374)) by @FeodorFitsner.
-* Remove deprecated module-level `margin`, `padding`, `border`, and `border_radius` helpers (`all()`, `symmetric()`, `only()`, `horizontal()`, `vertical()`) in favor of the corresponding `Margin`, `Padding`, `Border`, and `BorderRadius` classmethods ([#6425](https://github.com/flet-dev/flet/pull/6425)) by @ndonkoHenri.
 * Centralize Linux apt dependencies in `flet.utils.linux_deps` and update CI workflows and publish docs to consume them dynamically ([#6357](https://github.com/flet-dev/flet/issues/6357), [#6383](https://github.com/flet-dev/flet/pull/6383)) by @ndonkoHenri.
 * Bump `serious_python` to `0.9.12` in the `flet build` template ([#6461](https://github.com/flet-dev/flet/pull/6461)) by @FeodorFitsner.
 
