@@ -1,3 +1,9 @@
+## 0.85.3
+
+### Bug fixes
+
+* Defer pre-show window placement on Linux (`centerWindow()`, `setWindowAlignment()`) until the window first becomes visible, so `page.window.center()` / `page.window.alignment` set before `page.window.visible = True` no longer flash the window during startup. Also preserve the `focused` state when a `prevent_close` handler cancels a close attempt ([#5897](https://github.com/flet-dev/flet/issues/5897), [#5914](https://github.com/flet-dev/flet/issues/5914), [#6527](https://github.com/flet-dev/flet/pull/6527)) by @ihmily.
+
 ## 0.85.2
 
 _No changes in the `flet` Dart package; version bumped for release coordination with `flet.Router` enhancements on the Python side (modal/recursive route flags, chain-based default pop)._
