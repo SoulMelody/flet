@@ -1,5 +1,8 @@
 <p align="center">
-  <a href="https://flet.dev"><img src="https://raw.githubusercontent.com/flet-dev/flet/refs/heads/main/media/logo/flet-logo.svg" height="150" alt="Flet logo"></a>
+  <a href="https://flet.dev"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flet-dev/flet/refs/heads/main/media/logo/flet-logo-dark.svg">
+    <img src="https://raw.githubusercontent.com/flet-dev/flet/refs/heads/main/media/logo/flet-logo.svg" height="150" alt="Flet logo">
+  </picture></a>
 </p>
 
 <p align="center">
@@ -128,7 +131,7 @@ flet run --web counter.py
 * [Website](https://flet.dev)
 * [Documentation](https://flet.dev/docs/)
 * [Roadmap](https://flet.dev/roadmap)
-* [Apps Gallery](https://flet.dev/gallery)
+* [Apps Gallery](https://studio.flet.dev/gallery)
 
 ## Community
 

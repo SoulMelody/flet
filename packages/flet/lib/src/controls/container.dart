@@ -6,12 +6,12 @@ import '../utils/alignment.dart';
 import '../utils/animations.dart';
 import '../utils/borders.dart';
 import '../utils/box.dart';
+import '../utils/client_actions.dart';
 import '../utils/colors.dart';
 import '../utils/edge_insets.dart';
 import '../utils/events.dart';
 import '../utils/gradient.dart';
 import '../utils/images.dart';
-import '../utils/launch_url.dart';
 import '../utils/misc.dart';
 import '../utils/numbers.dart';
 import '../widgets/flet_store_mixin.dart';
@@ -34,7 +34,7 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
     var ink = control.getBool("ink", false)!;
     var onClick = control.hasEventHandler("click");
     var onTapDown = control.hasEventHandler("tap_down");
-    var url = control.getUrl("url");
+    var hasActions = control.hasControlActions;
     var onLongPress = control.hasEventHandler("long_press");
     var onHover = control.hasEventHandler("hover");
     var ignoreInteractions = control.getBool("ignore_interactions", false)!;
@@ -68,9 +68,27 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
     var onAnimationEnd = control.hasEventHandler("animation_end")
         ? () => control.triggerEvent("animation_end", "container")
         : null;
-    if ((onClick || url != null || onLongPress || onHover || onTapDown) &&
+    if ((onClick || hasActions || onLongPress || onHover || onTapDown) &&
         ink &&
         !control.disabled) {
+      // `padding` and `alignment` are applied inside the `InkWell` only, so that
+      // ink effects cover the entire area of this container.
+      var inkContent = animation == null
+          ? Container(
+              padding: padding,
+              alignment: alignment,
+              clipBehavior: Clip.none,
+              child: content,
+            )
+          : AnimatedContainer(
+              duration: animation.duration,
+              curve: animation.curve,
+              padding: padding,
+              alignment: alignment,
+              clipBehavior: Clip.none,
+              child: content,
+            );
+
       var ink = Material(
           color: Colors.transparent,
           borderRadius: boxDecoration!.borderRadius,
@@ -78,11 +96,9 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
             // Dummy callback to enable widget
             // see https://github.com/flutter/flutter/issues/50116#issuecomment-582047374
             // and https://github.com/flutter/flutter/blob/eed80afe2c641fb14b82a22279d2d78c19661787/packages/flutter/lib/src/material/ink_well.dart#L1125-L1129
-            onTap: onClick || url != null || onTapDown
+            onTap: onClick || hasActions || onTapDown
                 ? () {
-                    if (url != null) {
-                      openWebBrowser(url);
-                    }
+                    runControlActions(context, control);
                     if (onClick) {
                       control.triggerEvent("click");
                     }
@@ -100,12 +116,7 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
                 : null,
             borderRadius: borderRadius,
             splashColor: control.getColor("ink_color", context),
-            child: Container(
-              padding: padding,
-              alignment: alignment,
-              clipBehavior: Clip.none,
-              child: content,
-            ),
+            child: inkContent,
           ));
 
       container = animation == null
@@ -124,8 +135,6 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
               width: width,
               height: height,
               margin: margin,
-              alignment: alignment,
-              padding: padding,
               decoration: boxDecoration,
               foregroundDecoration: boxForegroundDecoration,
               clipBehavior: clipBehavior,
@@ -157,10 +166,10 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
               onEnd: onAnimationEnd,
               child: content);
 
-      if ((onClick || onLongPress || onHover || onTapDown || url != null) &&
+      if ((onClick || onLongPress || onHover || onTapDown || hasActions) &&
           !control.disabled) {
         container = MouseRegion(
-          cursor: onClick || onTapDown || url != null
+          cursor: onClick || onTapDown || hasActions
               ? SystemMouseCursors.click
               : MouseCursor.defer,
           onEnter: onHover
@@ -174,11 +183,9 @@ class ContainerControl extends StatelessWidget with FletStoreMixin {
                 }
               : null,
           child: GestureDetector(
-            onTap: onClick || url != null
+            onTap: onClick || hasActions
                 ? () {
-                    if (url != null) {
-                      openWebBrowser(url);
-                    }
+                    runControlActions(context, control);
                     if (onClick) {
                       control.triggerEvent("click");
                     }
