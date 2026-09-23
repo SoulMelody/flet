@@ -1,3 +1,19 @@
+## 1.0.1
+
+### Improvements
+
+* Update python-build to `20260921` and serious_python to `4.7.1`, bringing Pyodide `0.27.8`, `0.29.5`, and `314.0.7` for Python 3.12, 3.13, and 3.14, respectively. CPython versions and wheel platform tags are unchanged ([python-build#42](https://github.com/flet-dev/python-build/pull/42), [serious-python#249](https://github.com/flet-dev/serious-python/pull/249)) by @FeodorFitsner.
+
+### Bug fixes
+
+* Fix macOS crashes during native scientific imports and NumPy operations by increasing the embedded Python worker stack to at least 8 MiB, via serious_python `4.7.1` and dart_bridge `1.10.0` ([serious-python#85](https://github.com/flet-dev/serious-python/issues/85), [dart-bridge#21](https://github.com/flet-dev/dart-bridge/pull/21)) by @AeneasTews.
+* Fix service properties and event handlers set in `init()` after `super().init()` being omitted from registration. Services now register after `init()` returns, so handlers are available for events raised during client initialization. Failed registrations also no longer leave invalid entries that break later registrations ([#6736](https://github.com/flet-dev/flet/discussions/6736), [#6858](https://github.com/flet-dev/flet/pull/6858)) by @ndonkoHenri.
+
+  **Compatibility:** `init()` overrides now register even without calling `super().init()`. Use `ft.context.page` inside `init()`; `self.page` and `self.update()` are only available after attachment. Fields set in `init()` now participate in serialization, so keep Python-only state in undeclared attributes or fields with `metadata={"skip": True}`.
+* Fix `ListTile` layout and click events inside a `Row` with unbounded width ([#6854](https://github.com/flet-dev/flet/issues/6854), [#6861](https://github.com/flet-dev/flet/pull/6861)) by @FeodorFitsner.
+* Fix child components losing click events when passed as control arguments to a component that re-renders ([#6857](https://github.com/flet-dev/flet/issues/6857), [#6859](https://github.com/flet-dev/flet/pull/6859)) by @FeodorFitsner.
+* Fix `RawImage.render()` stalling until the acknowledgement timeout in packaged Windows apps by waking the Python event loop when frame acknowledgements arrive ([#6847](https://github.com/flet-dev/flet/issues/6847), [#6860](https://github.com/flet-dev/flet/pull/6860)) by @FeodorFitsner.
+
 ## 1.0.0
 
 ### New features
@@ -103,6 +119,10 @@
 
 ### Documentation
 
+* Add a [**Migrating from Flet 0.28 to 1.0** guide](https://docs.flet.dev/updates/migrate-to-1-0), replacing the GitHub issue that migration links previously pointed at. The 0.28 → 1.0 jump spans the whole 0.70 → 0.86 pre-release series, so the guide is organized as eight steps in migration order: dependencies, the `ft.app()` → `ft.run()` entry point, the single-threaded model, services, automatic updates, custom controls without `UserControl`, the renamed APIs, and the 0.86 packaging and storage changes. The largest section covers concurrency: in 0.28 every sync event handler was dispatched onto a thread pool, so blocking code never froze the UI, while in 1.0 handlers run directly on the app's event loop - the reason an otherwise-working migrated app feels unresponsive. It lists the symptoms, maps blocking libraries to their async counterparts, covers `asyncio.to_thread()` / `run_thread()` / `run_in_executor()` for code with no async version, and works through a progress-reporting loop in its broken, `yield`-based and offloaded forms. Also documents two changes that fail silently rather than raising: `SafeArea`'s edge flags became `avoid_intrusions_*` while `left`/`top`/`right`/`bottom` remain as positioning properties, and `Tabs` split into `Tabs`, `TabBar` and `TabBarView` by @FeodorFitsner.
+* Rewrite the [**Async apps** cookbook page](https://docs.flet.dev/cookbook/async-apps), which still described the 0.28 behavior ("Flet executes control event handlers in separate threads") and documented `run_task()` under a "Threading" heading without mentioning `run_thread()`. It now covers the single event loop, sync and async handlers, scheduling async work from a lambda, background tasks and their cancellation, the three offloading primitives, CPU-bound work, and a platform matrix for threads, subinterpreters and multiprocessing. Adds a `yield`-for-intermediate-updates section to [Auto-update](https://docs.flet.dev/cookbook/auto-update), and fixes [Client storage](https://docs.flet.dev/cookbook/client-storage) and [Authentication](https://docs.flet.dev/cookbook/authentication), which still used the `page.shared_preferences` accessor removed in 1.0 by @FeodorFitsner.
+
+* The [Icons](https://flet.dev/docs/types/icons) and [CupertinoIcons](https://flet.dev/docs/types/cupertinoicons) reference pages are now searchable galleries that show the actual glyphs, drawn with the same fonts the Flet client renders with. Filter Material icons by style, and click any icon to copy its `ft.Icons.NAME` ([#6838](https://github.com/flet-dev/flet/issues/6838), [#6843](https://github.com/flet-dev/flet/pull/6843)) by @ndonkoHenri.
 * Add a [**Subinterpreters** cookbook page](https://docs.flet.dev/cookbook/subinterpreters) on using Python 3.14's [`concurrent.interpreters`](https://docs.python.org/3/library/concurrent.interpreters.html) and [`InterpreterPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#interpreterpoolexecutor) for true multi-core CPU parallelism inside a single Flet process — the in-process, mobile-capable counterpart to [Multiprocessing](https://docs.flet.dev/cookbook/multiprocessing), which can't spawn child processes on iOS/Android. Walks through three runnable examples — a parallel pool map, streaming progress over a shared cross-interpreter `Queue`, and a reused long-lived interpreter — with the rules and gotchas for each. Works on desktop and mobile with the bundled Python 3.14; not in static (Pyodide) web builds ([#6782](https://github.com/flet-dev/flet/pull/6782)) by @ndonkoHenri.
 
 ## 0.86.5
